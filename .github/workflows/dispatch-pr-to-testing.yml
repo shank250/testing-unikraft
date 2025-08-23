@@ -6,7 +6,7 @@ on:
     branches:
       - autokraft
 
-      
+
 permissions:
   contents: read
 
@@ -21,25 +21,17 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const repo = context.payload.repository;
-
             const payload = {
               source_repo: repo.full_name,
               source_repo_clone_url: repo.clone_url,
               pr_number: pr.number,
               pr_url: pr.html_url,
               pr_title: pr.title,
-              pr_body: pr.body || '',
+              pr_head_repo_full_name: pr.head.repo.full_name,
               pr_head_ref: pr.head.ref,
               pr_head_sha: pr.head.sha,
-              pr_head_repo_full_name: pr.head.repo.full_name,
-              pr_head_repo_clone_url: pr.head.repo.clone_url,
               pr_is_fork: pr.head.repo.full_name !== repo.full_name,
-              pr_base_ref: pr.base.ref,
-              pr_base_repo_full_name: pr.base.repo.full_name,
-              pr_base_repo_clone_url: pr.base.repo.clone_url,
-              sender_login: context.actor,
-              action: context.payload.action,
-              timestamp: new Date().toISOString()
+              sender_login: context.actor
             };
 
             const owner = process.env.TARGET_REPO_OWNER || repo.owner.login;
@@ -50,7 +42,7 @@ jobs:
               owner,
               repo: repoName,
               event_type: 'uk_pr_test',
-              client_payload: payload
+                client_payload: payload
             });
             core.notice(`Repository dispatch sent to ${owner}/${repoName} for PR #${pr.number}`);
         env:
