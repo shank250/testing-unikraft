@@ -23,20 +23,11 @@ jobs:
               const repo = context.payload.repository;
 
               const payload = {
-                pr: {
-                  number: pr.number,
-                  url: pr.html_url,
-                  title: pr.title ? pr.title.substring(0, 512) : '',
-                  head: {
-                    repo_full_name: pr.head.repo?.full_name || '',
-                    ref: pr.head.ref || '',
-                    sha: pr.head.sha || ''
-                  }
-                },
-                repo: {
-                  full_name: repo.full_name,
-                  clone_url: repo.clone_url
-                }
+                pr_number: pr.number,
+                pr_url: pr.html_url,
+                pr_head_ref: pr.head.ref,
+                pr_head_sha: pr.head.sha,
+                pr_repo_name: repo.full_name
               };
 
               const owner = process.env.TARGET_REPO_OWNER || repo.owner.login;
