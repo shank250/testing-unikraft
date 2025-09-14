@@ -1,0 +1,49 @@
+name: Dispatch PR to testing framework
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches:
+      - autokraft
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch PR details to testing repo
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.UK_TESTING_REPO_TOKEN }}
+          script: |
+            try {
+              const pr = context.payload.pull_request;
+              const repo = context.payload.repository;
+
+              const payload = {
+                pr_number: pr.number,
+                pr_url: pr.html_url,
+                pr_head_ref: pr.head.ref,
+                pr_repo_name: repo.full_name
+              };
+
+              const owner = process.env.TARGET_REPO_OWNER || repo.owner.login;
+              const repoName = process.env.TARGET_REPO_NAME || 'testing-framework-uk-build';
+
+              core.info(`Dispatching to ${owner}/${repoName} with event_type 'uk_pr_test'...`);
+              await github.request('POST /repos/{owner}/{repo}/dispatches', {
+                owner,
+                repo: repoName,
+                event_type: 'uk_pr_test',
+                client_payload: payload
+              });
+              core.notice(`Repository dispatch sent to ${owner}/${repoName} for PR #${pr.number}`);
+            } catch (error) {
+              core.error(`Failed to send repository dispatch: ${error.message}`);
+              core.setFailed(error.message);
+            }
+        env:
+          TARGET_REPO_OWNER: ${{ vars.TARGET_REPO_OWNER }}
+          TARGET_REPO_NAME: ${{ vars.TARGET_REPO_NAME }}
